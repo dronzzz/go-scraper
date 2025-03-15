@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
+	_"github.com/lib/pq"    //still include as we are not direclty callign it 
 )
 
 func main(){
@@ -18,6 +19,20 @@ func main(){
 	portString := os.Getenv("PORT")
 	if portString == "" {
 		log.Fatal("Port is not found in the environment")
+	}
+
+	type apiConfig struct{
+		DB *database.Queries
+	}
+
+	db_URL := os.Getenv("DB_URL")
+	if db_URL != nil{
+		log.Fatal("DB_URL is not found in the environment")
+	}
+
+	conn,err := sql.open("postgres",db_URL)
+	if err != nil {
+		log.Fatal("err while connectinig to the database")
 	}
 
 
@@ -33,7 +48,7 @@ func main(){
 		MaxAge: 300,
 	}))
 
-	v1Router := chi.NewRouter()
+	v1Router := chi.NewRouter() 
 
 	v1Router.Get("/healtz",handlerReadiness)
 	v1Router.Get("/error",handleErr)
