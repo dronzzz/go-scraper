@@ -5,5 +5,5 @@ import (
 )
 
 func handlerReadiness(w http.ResponseWriter, r *http.Request){
-	responWithJson(w,200,struct{}{})
+	respondWithJson(w,200,struct{}{})
 }
