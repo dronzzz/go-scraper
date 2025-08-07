@@ -3,14 +3,16 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/dronzzz/go-scraper/Internal/database"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq" //still include as we are not direclty callign it
-	"log"
-	"net/http"
-	"os"
 )
 
 type apiConfig struct {
@@ -18,7 +20,7 @@ type apiConfig struct {
 }
 
 func main() {
-	fmt.Println("hello world")
+
 	godotenv.Load(".env")
 
 	portString := os.Getenv("PORT")
@@ -35,10 +37,11 @@ func main() {
 	if err != nil {
 		log.Fatal("err while connectinig to the database")
 	}
+	db := database.New(conn)
 	apiCfg := apiConfig{
-		DB: database.New(conn),
+		DB: db,
 	}
-
+	go startScraping(db, 10, time.Minute)
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
@@ -57,8 +60,8 @@ func main() {
 	v1Router.Get("/error", handleErr)
 	v1Router.Post("/user", apiCfg.handlerCreateUser)
 	v1Router.Get("/user", apiCfg.middlewareAuth(apiCfg.handlerGetUser))
-	v1Router.Post("/feeds", apiCfg.handlerGetFeeds)
-	v1Router.Get("/feeds", apiCfg.middlewareAuth(apiCfg.handlerCreateFeed))
+	v1Router.Get("/feeds", apiCfg.handlerGetFeeds)
+	v1Router.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerCreateFeed))
 	v1Router.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetUserFeeds))
 	v1Router.Post("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerCreateFeedFollow))
 	v1Router.Delete("/feed_follows/{feedFollowID}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow))

@@ -17,6 +17,7 @@ func (apiCfg *apiConfig) handlerCreateFeed(w http.ResponseWriter, r *http.Reques
 
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
+	fmt.Print("called the createfeed func")
 	err := decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("error parsing JSON", err))
@@ -36,6 +37,8 @@ func (apiCfg *apiConfig) handlerCreateFeed(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("Couldn't create feed", err))
 	}
+
+	fmt.Print("params", params)
 
 	respondWithJson(w, 200, feed)
 }
